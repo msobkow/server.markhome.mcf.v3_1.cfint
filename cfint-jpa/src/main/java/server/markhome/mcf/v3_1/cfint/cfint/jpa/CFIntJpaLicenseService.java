@@ -1,0 +1,483 @@
+// Description: Java 25 Spring JPA Service for License
+
+/*
+ *	server.markhome.mcf.CFInt
+ *
+ *	Copyright (c) 2016-2026 Mark Stephen Sobkow
+ *	
+ *	Mark's Code Fractal 3.1 CFInt - Internet Essentials
+ *	
+ *	This file is part of Mark's Code Fractal CFInt.
+ *	
+ *	Licensed under the Apache License, Version 2.0 (the "License");
+ *	you may not use this file except in compliance with the License.
+ *	You may obtain a copy of the License at
+ *	
+ *	http://www.apache.org/licenses/LICENSE-2.0
+ *	
+ *	Unless required by applicable law or agreed to in writing, software
+ *	distributed under the License is distributed on an "AS IS" BASIS,
+ *	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *	See the License for the specific language governing permissions and
+ *	limitations under the License.
+ *	
+ */
+
+package server.markhome.mcf.v3_1.cfint.cfint.jpa;
+
+import java.io.Serializable;
+import java.math.*;
+import java.time.*;
+import java.util.*;
+import jakarta.persistence.*;
+import server.markhome.mcf.v3_1.cflib.*;
+import server.markhome.mcf.v3_1.cflib.dbutil.*;
+import server.markhome.mcf.v3_1.cflib.keyhash.*;
+import server.markhome.mcf.v3_1.cflib.xml.CFLibXmlUtil;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.text.StringEscapeUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import server.markhome.mcf.v3_1.cfsec.cfsec.*;
+import server.markhome.mcf.v3_1.cfint.cfint.*;
+
+/**
+ *	Service for the CFIntLicense entities defined in server.markhome.mcf.v3_1.cfint.cfint.jpa
+ *	using the CFIntLicenseRepository to access them.
+ */
+@Service("cfint31JpaLicenseService")
+public class CFIntJpaLicenseService {
+
+	@Autowired
+	@Qualifier("cfint31EntityManagerFactory")
+	private LocalContainerEntityManagerFactoryBean cfint31EntityManagerFactory;
+
+	@Autowired
+	private CFIntJpaLicenseRepository cfint31LicenseRepository;
+
+	/**
+	 *	Create an entity, generating any database keys required along the way.
+	 *
+	 *		@param	data	The entity to be instantiated; must be a specific instance of CFIntJpaLicense, not a subclass.
+	 *
+	 *		@return The updated/created entity.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED,rollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense create(CFIntJpaLicense data) {
+		final String S_ProcName = "create";
+		if (data == null) {
+			return( null );
+		}
+		ICFLibKeyHash256 originalRequiredId = data.getRequiredId();
+		boolean generatedRequiredId = false;
+		if (data.getRequiredOwnerTenant() == null) {
+			throw new CFLibUnresolvedRelationException(getClass(),
+				S_ProcName,
+				"Owner",
+				"Owner",
+				"data.requiredOwnerTenant",
+				"data.requiredOwnerTenant",
+				"Tenant",
+				"Tenant",
+				null);
+		}
+		if (data.getRequiredContainerTopDomain() == null) {
+			throw new CFLibUnresolvedRelationException(getClass(),
+				S_ProcName,
+				"Container",
+				"Container",
+				"data.requiredContainerTopDomain",
+				"data.requiredContainerTopDomain",
+				"TopDomain",
+				"TopDomain",
+				null);
+		}
+		if(data.getRequiredTenantId() == null || data.getRequiredTenantId().isNull()) {
+			throw new CFLibNullArgumentException(getClass(),
+				S_ProcName,
+				0,
+				"data.requiredTenantId");
+		}
+		if(data.getRequiredTopDomainId() == null || data.getRequiredTopDomainId().isNull()) {
+			throw new CFLibNullArgumentException(getClass(),
+				S_ProcName,
+				0,
+				"data.requiredTopDomainId");
+		}
+		if(data.getRequiredName() == null) {
+			throw new CFLibNullArgumentException(getClass(),
+				S_ProcName,
+				0,
+				"data.requiredName");
+		}
+		try {
+			if(data.getPKey() != null && !data.getPKey().isNull() && cfint31LicenseRepository.existsById(($implCommaIJavaOptAtomType$)data.getPKey())) {
+				return( (CFIntJpaLicense)(cfint31LicenseRepository.findById(($implCommaIJavaOptAtomType$)(data.getPKey())).get()));
+			}
+			if (data.getRequiredRevision() <= 0) {
+				data.setRequiredRevision(1);
+			}
+			if (data.getRequiredId() == null || data.getRequiredId().isNull()) {
+				data.setRequiredId(new CFLibDbKeyHash256(0));
+				generatedRequiredId = true;
+			}
+			return cfint31LicenseRepository.save(data);
+		}
+		catch(Exception ex) {
+				if(generatedRequiredId) {
+					data.setRequiredId(originalRequiredId);
+				}
+			throw new CFLibDbException(getClass(),
+				S_ProcName,
+				ex);
+		}
+	}
+
+	/**
+	 *	Update an existing entity.
+	 *
+	 *		@param	data	The entity to be updated.
+	 *
+	 *		@return The updated entity.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED,rollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense update(CFIntJpaLicense data) {
+		final String S_ProcName = "update";
+		if (data == null) {
+			return( null );
+		}
+		if (data.getPKey() == null) {
+			throw new CFLibNullArgumentException(getClass(),
+				S_ProcName,
+				0,
+				"data.getPKey()");
+		}
+		if (data.getRequiredOwnerTenant() == null) {
+			throw new CFLibUnresolvedRelationException(getClass(),
+				S_ProcName,
+				"Owner",
+				"Owner",
+				"data.requiredOwnerTenant",
+				"data.requiredOwnerTenant",
+				"Tenant",
+				"Tenant",
+				null);
+		}
+		if (data.getRequiredContainerTopDomain() == null) {
+			throw new CFLibUnresolvedRelationException(getClass(),
+				S_ProcName,
+				"Container",
+				"Container",
+				"data.requiredContainerTopDomain",
+				"data.requiredContainerTopDomain",
+				"TopDomain",
+				"TopDomain",
+				null);
+		}
+		if(data.getRequiredTenantId() == null || data.getRequiredTenantId().isNull()) {
+			throw new CFLibNullArgumentException(getClass(),
+				S_ProcName,
+				0,
+				"data.requiredTenantId");
+		}
+		if(data.getRequiredTopDomainId() == null || data.getRequiredTopDomainId().isNull()) {
+			throw new CFLibNullArgumentException(getClass(),
+				S_ProcName,
+				0,
+				"data.requiredTopDomainId");
+		}
+		if(data.getRequiredName() == null) {
+			throw new CFLibNullArgumentException(getClass(),
+				S_ProcName,
+				0,
+				"data.requiredName");
+		}
+		// Ensure the entity exists and that the revision matches
+		CFIntJpaLicense existing = cfint31LicenseRepository.findById(($implCommaIJavaOptAtomType$)(data.getPKey()))
+			.orElseThrow(() -> new CFLibCollisionDetectedException(getClass(), S_ProcName, data.getPKey()));
+		if (existing.getRequiredRevision() != data.getRequiredRevision()) {
+			throw new CFLibCollisionDetectedException(getClass(), S_ProcName, data.getPKey());
+		}
+		// Apply superior data relationships of CFIntLicense to existing object
+		existing.setRequiredOwnerTenant(data.getRequiredTenantId());
+		existing.setRequiredContainerTopDomain(data.getRequiredContainerTopDomain());
+		// Apply data columns of CFIntLicense to existing object
+		existing.setRequiredTenantId(data.getRequiredTenantId());
+		existing.setRequiredTopDomainId(data.getRequiredTopDomainId());
+		existing.setRequiredName(data.getRequiredName());
+		existing.setOptionalDescription(data.getOptionalDescription());
+		existing.setOptionalEmbeddedText(data.getOptionalEmbeddedText());
+		existing.setOptionalFullText(data.getOptionalFullText());
+		// Save the changes we've made
+		return cfint31LicenseRepository.save(existing);
+	}
+
+	/**
+	 *	Argument-based find database instance for compatibility with the current MSS code factory code base.
+	 *
+	 *		@param requiredId
+	 *
+	 *		@return The retrieved entity, or null if no such entity exists.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense find(@Param("id") ICFLibKeyHash256 requiredId) {
+		return( cfint31LicenseRepository.get(requiredId));
+	}
+
+	/**
+	 *	Retrieve all entities from the repository
+	 *
+	 *		@return The list of retrieved entities, which may be empty
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> findAll() {
+		return( cfint31LicenseRepository.findAll() );
+	}
+
+	// CFIntLicense specified index finders
+
+	/**
+	 *	Find zero or more entities into a List using the columns of the ICFIntLicenseByLicnTenantIdxKey as arguments.
+	 *
+	 *		@param requiredTenantId
+	 *
+	 *		@return List&lt;CFIntJpaLicense&gt; of the found entities, or an empty list if no such entities exist.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> findByLicnTenantIdx(@Param("tenantId") ICFLibKeyHash256 requiredTenantId) {
+		return( cfint31LicenseRepository.findByLicnTenantIdx(requiredTenantId));
+	}
+
+	/**
+	 *	ICFIntLicenseByLicnTenantIdxKey entity list finder convenience method for object-based access.
+	 *
+	 *		@param key The ICFIntLicenseByLicnTenantIdxKey instance to use for the query arguments.
+	 *
+	 *		@return The found entity list, which may be empty.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> findByLicnTenantIdx(ICFIntLicenseByLicnTenantIdxKey key) {
+		return( cfint31LicenseRepository.findByLicnTenantIdx(key.getRequiredTenantId()));
+	}
+
+	/**
+	 *	Find zero or more entities into a List using the columns of the ICFIntLicenseByDomainIdxKey as arguments.
+	 *
+	 *		@param requiredTopDomainId
+	 *
+	 *		@return List&lt;CFIntJpaLicense&gt; of the found entities, or an empty list if no such entities exist.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> findByDomainIdx(@Param("topDomainId") ICFLibKeyHash256 requiredTopDomainId) {
+		return( cfint31LicenseRepository.findByDomainIdx(requiredTopDomainId));
+	}
+
+	/**
+	 *	ICFIntLicenseByDomainIdxKey entity list finder convenience method for object-based access.
+	 *
+	 *		@param key The ICFIntLicenseByDomainIdxKey instance to use for the query arguments.
+	 *
+	 *		@return The found entity list, which may be empty.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> findByDomainIdx(ICFIntLicenseByDomainIdxKey key) {
+		return( cfint31LicenseRepository.findByDomainIdx(key.getRequiredTopDomainId()));
+	}
+
+	/**
+	 *	Find an entity using the columns of the ICFIntLicenseByUNameIdxKey as arguments.
+	 *
+	 *		@param requiredTopDomainId
+	 *		@param requiredName
+	 *
+	 *		@return The found entity, or null if no such entity exists.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense findByUNameIdx(@Param("topDomainId") ICFLibKeyHash256 requiredTopDomainId,
+		@Param("name") String requiredName) {
+		return( cfint31LicenseRepository.findByUNameIdx(requiredTopDomainId,
+			requiredName));
+	}
+
+	/**
+	 *	ICFIntLicenseByUNameIdxKey entity finder convenience method for object-based access.
+	 *
+	 *		@param key The ICFIntLicenseByUNameIdxKey instance to use for the query arguments.
+	 *
+	 *		@return The found entity, or null if no such entity exists.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense findByUNameIdx(ICFIntLicenseByUNameIdxKey key) {
+		return( cfint31LicenseRepository.findByUNameIdx(key.getRequiredTopDomainId(), key.getRequiredName()));
+	}
+
+	// CFIntLicense specified lock-by-index methods
+
+	/**
+	 *	Argument-based lock database entity for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity locks, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredId
+	 *
+	 *		@return The locked entity, refreshed from the data store, or null if no such entity exists.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense lockByIdIdx(@Param("id") ICFLibKeyHash256 requiredId) {
+		return( cfint31LicenseRepository.lockByIdIdx(requiredId));
+	}
+
+	/**
+	 *	Argument-based lock database instance for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity locks, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredTenantId
+	 *
+	 *		@return A list of locked entities, refreshed from the data store, or an empty list if no such entities exist.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> lockByLicnTenantIdx(@Param("tenantId") ICFLibKeyHash256 requiredTenantId) {
+		return( cfint31LicenseRepository.lockByLicnTenantIdx(requiredTenantId));
+	}
+
+	/**
+	 *	ICFIntLicenseByLicnTenantIdxKey based lock method for object-based access.
+	 *
+	 *		@param key The key of the entity to be locked.
+	 *
+	 *		@return A list of locked entities, refreshed from the data store, or an empty list if no such entities exist.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> lockByLicnTenantIdx(ICFIntLicenseByLicnTenantIdxKey key) {
+		return( cfint31LicenseRepository.lockByLicnTenantIdx(key.getRequiredTenantId()));
+	}
+
+	/**
+	 *	Argument-based lock database instance for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity locks, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredTopDomainId
+	 *
+	 *		@return A list of locked entities, refreshed from the data store, or an empty list if no such entities exist.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> lockByDomainIdx(@Param("topDomainId") ICFLibKeyHash256 requiredTopDomainId) {
+		return( cfint31LicenseRepository.lockByDomainIdx(requiredTopDomainId));
+	}
+
+	/**
+	 *	ICFIntLicenseByDomainIdxKey based lock method for object-based access.
+	 *
+	 *		@param key The key of the entity to be locked.
+	 *
+	 *		@return A list of locked entities, refreshed from the data store, or an empty list if no such entities exist.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public List<CFIntJpaLicense> lockByDomainIdx(ICFIntLicenseByDomainIdxKey key) {
+		return( cfint31LicenseRepository.lockByDomainIdx(key.getRequiredTopDomainId()));
+	}
+
+	/**
+	 *	Argument-based lock database entity for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity locks, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredTopDomainId
+	 *		@param requiredName
+	 *
+	 *		@return The locked entity, refreshed from the data store, or null if no such entity exists.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense lockByUNameIdx(@Param("topDomainId") ICFLibKeyHash256 requiredTopDomainId,
+		@Param("name") String requiredName) {
+		return( cfint31LicenseRepository.lockByUNameIdx(requiredTopDomainId,
+			requiredName));
+	}
+
+	/**
+	 *	ICFIntLicenseByUNameIdxKey based lock method for object-based access.
+	 *
+	 *		@param key The key of the entity to be locked.
+	 *
+	 *		@return The locked entity, refreshed from the data store, or null if no such entity exists.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public CFIntJpaLicense lockByUNameIdx(ICFIntLicenseByUNameIdxKey key) {
+		return( cfint31LicenseRepository.lockByUNameIdx(key.getRequiredTopDomainId(), key.getRequiredName()));
+	}
+
+	// CFIntLicense specified delete-by-index methods
+
+	/**
+	 *	Argument-based delete entity for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity lock, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredId
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public void deleteByIdIdx(@Param("id") ICFLibKeyHash256 requiredId) {
+		cfint31LicenseRepository.deleteByIdIdx(requiredId);
+	}
+
+	/**
+	 *	Argument-based delete entity for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity lock, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredTenantId
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public void deleteByLicnTenantIdx(@Param("tenantId") ICFLibKeyHash256 requiredTenantId) {
+		cfint31LicenseRepository.deleteByLicnTenantIdx(requiredTenantId);
+	}
+
+	/**
+	 *	ICFIntLicenseByLicnTenantIdxKey based lock method for object-based access.
+	 *
+	 *		@param key The ICFIntLicenseByLicnTenantIdxKey of the entity to be locked.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public void deleteByLicnTenantIdx(ICFIntLicenseByLicnTenantIdxKey key) {
+		cfint31LicenseRepository.deleteByLicnTenantIdx(key.getRequiredTenantId());
+	}
+
+	/**
+	 *	Argument-based delete entity for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity lock, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredTopDomainId
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public void deleteByDomainIdx(@Param("topDomainId") ICFLibKeyHash256 requiredTopDomainId) {
+		cfint31LicenseRepository.deleteByDomainIdx(requiredTopDomainId);
+	}
+
+	/**
+	 *	ICFIntLicenseByDomainIdxKey based lock method for object-based access.
+	 *
+	 *		@param key The ICFIntLicenseByDomainIdxKey of the entity to be locked.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public void deleteByDomainIdx(ICFIntLicenseByDomainIdxKey key) {
+		cfint31LicenseRepository.deleteByDomainIdx(key.getRequiredTopDomainId());
+	}
+
+	/**
+	 *	Argument-based delete entity for compatibility with the current MSS code factory code base, uses @Transactional to acquire a JPA entity lock, which may or may not imply an actual database lock during the transaction.
+	 *
+	 *		@param requiredTopDomainId
+	 *		@param requiredName
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public void deleteByUNameIdx(@Param("topDomainId") ICFLibKeyHash256 requiredTopDomainId,
+		@Param("name") String requiredName) {
+		cfint31LicenseRepository.deleteByUNameIdx(requiredTopDomainId,
+			requiredName);
+	}
+
+	/**
+	 *	ICFIntLicenseByUNameIdxKey based lock method for object-based access.
+	 *
+	 *		@param key The ICFIntLicenseByUNameIdxKey of the entity to be locked.
+	 */
+	@Transactional(propagation = Propagation.REQUIRED, noRollbackFor = NoResultException.class, transactionManager = "cfint31TransactionManager")
+	public void deleteByUNameIdx(ICFIntLicenseByUNameIdxKey key) {
+		cfint31LicenseRepository.deleteByUNameIdx(key.getRequiredTopDomainId(), key.getRequiredName());
+	}
+
+}
